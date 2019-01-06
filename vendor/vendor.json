@@ -1,10 +1,23 @@
 {
 	"comment": "",
-	"ignore": "test",
-	"package": [],
-	"rootPath": "redir",
 	"heroku": {
-        "install" : [ "./..." ],
-        "goVersion": "go1.11"
-         }
+		"goVersion": "go1.11",
+		"install": [
+			"./..."
+		]
+	},
+	"ignore": "test",
+	"package": [
+		{
+			"checksumSHA1": "v0tjzbpe2tCHK+2B4/BBfLJBES0=",
+			"path": "github.com/gorilla/mux",
+			"revision": "f3ff42f93a451d7ffb2ff11cb9485f3f88089c83",
+			"revisionTime": "2019-01-04T15:08:45Z"
+		},
+		{
+			"path": "https://github.com/gorilla/mux",
+			"revision": ""
+		}
+	],
+	"rootPath": "redir"
 }
