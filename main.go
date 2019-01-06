@@ -25,6 +25,8 @@ func main() {
 	if port == "" {
 		port = ":8000"
 	}
+
+	log.Println("Serving at port " + port)
 	log.Fatal(http.ListenAndServe(port, r))
 }
 
