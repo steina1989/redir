@@ -23,11 +23,11 @@ func main() {
 	r.HandleFunc("/{token}", redirectHandler).Methods("GET")
 	port := os.Getenv("PORT")
 	if port == "" {
-		port = ":8000"
+		port = "8000"
 	}
 
 	log.Println("Serving at port " + port)
-	log.Fatal(http.ListenAndServe(port, r))
+	log.Fatal(http.ListenAndServe(":"+port, r))
 }
 
 func redirectHandler(w http.ResponseWriter, r *http.Request) {
