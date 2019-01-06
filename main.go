@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"os"
 
 	"github.com/gorilla/mux"
 )
@@ -14,14 +15,17 @@ type request struct {
 }
 
 // Todo: Fetch dynamically
-var domain = "shit.ly"
+var domain = "redirdev.herokuapp.com"
 
 func main() {
 	r := mux.NewRouter()
 	r.HandleFunc("/", postHandler).Methods("POST")
 	r.HandleFunc("/{token}", redirectHandler).Methods("GET")
-
-	log.Fatal(http.ListenAndServe(":8000", r))
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = ":8000"
+	}
+	log.Fatal(http.ListenAndServe(port, r))
 }
 
 func redirectHandler(w http.ResponseWriter, r *http.Request) {
