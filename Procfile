@@ -1,1 +1,1 @@
-web: bin/redir
+web: redir
