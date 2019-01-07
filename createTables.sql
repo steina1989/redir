@@ -1,0 +1,4 @@
+CREATE TABLE url(
+    id BIGSERIAL PRIMARY KEY,
+    longurl VARCHAR NOT NULL
+);
