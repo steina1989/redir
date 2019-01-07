@@ -2,7 +2,6 @@ package main
 
 import (
 	"encoding/json"
-	"fmt"
 	"log"
 	"net/http"
 	"os"
@@ -17,7 +16,11 @@ type request struct {
 // Todo: Fetch dynamically
 var domain = "redirdev.herokuapp.com"
 
+var salt = "To be fetched from a better place"
+var minLength = 20
+
 func main() {
+
 	r := mux.NewRouter()
 	r.HandleFunc("/", postHandler).Methods("POST")
 	r.HandleFunc("/{token}", redirectHandler).Methods("GET")
@@ -31,26 +34,23 @@ func main() {
 
 func redirectHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
-	http.Redirect(w, r, fmt.Sprintf("https://www.google.com/search?q=%s", vars["token"]), 301)
+	longURL, _ := retrieveLongURL(vars["token"])
+	http.Redirect(w, r, longURL, 301)
 }
 
 func postHandler(w http.ResponseWriter, r *http.Request) {
-	var out request
-	err := json.NewDecoder(r.Body).Decode(&out)
+	var req request
+	err := json.NewDecoder(r.Body).Decode(&req)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
-	var alias = createAliasLink(out.path)
+	var alias, _ = submitLongURL(req.path)
 
 	response := map[string]string{"shortened": domain + "/" + alias}
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(response)
 
-}
-
-func createAliasLink(longPath string) string {
-	return "32m23"
 }
