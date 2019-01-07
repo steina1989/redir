@@ -15,8 +15,22 @@
 			"revisionTime": "2019-01-04T15:08:45Z"
 		},
 		{
-			"path": "https://github.com/gorilla/mux",
-			"revision": ""
+			"checksumSHA1": "xxLSo5tKtXc7jGrR70yoEfza8Cw=",
+			"path": "github.com/lib/pq",
+			"revision": "9eb73efc1fcc404148b56765b0d3f61d9a5ef8ee",
+			"revisionTime": "2018-10-16T16:26:27Z"
+		},
+		{
+			"checksumSHA1": "AU3fA8Sm33Vj9PBoRPSeYfxLRuE=",
+			"path": "github.com/lib/pq/oid",
+			"revision": "9eb73efc1fcc404148b56765b0d3f61d9a5ef8ee",
+			"revisionTime": "2018-10-16T16:26:27Z"
+		},
+		{
+			"checksumSHA1": "tecPenwUiv3ST5SXOzmM4MqBTUU=",
+			"path": "github.com/speps/go-hashids",
+			"revision": "6ba254bc2e328fdc3fca46bfbccea4ab8052755f",
+			"revisionTime": "2018-10-22T18:56:52Z"
 		}
 	],
 	"rootPath": "redir"
