@@ -17,6 +17,7 @@ func initDb(connection string) {
 	if err != nil {
 		log.Fatal(err)
 	}
+	log.Println("Connection to database successful")
 
 	hd := hashids.NewData()
 	hd.Salt = salt
@@ -28,35 +29,54 @@ func initDb(connection string) {
 func retrieveLongURL(token string) (string, error) {
 	// unhash primary key
 	// Get longurl from db that corresponds to key
+	var longurl string
+	id := dehash(token)
+	query := `SELECT longurl from url WHERE ID = ($1)`
 
-	return "https://www.quora.com/What-are-some-examples-of-very-clever-long-domain-names", nil
-
-}
-
-func submitLongURL(longURL string) (string, error) {
-
-	query := `INSERT INTO URL(longurl) VALUES ($1) RETURNING id`
-
-	statement, err := db.Prepare(query)
-	defer statement.Close()
+	err := db.QueryRow(query, id).Scan(&longurl)
 
 	if err != nil {
 		log.Println(err)
 	}
 
+	return longurl, nil
+
+}
+
+func submitLongURL(longURL string) (string, error) {
+
+	query := `INSERT INTO url(longurl) VALUES ($1) RETURNING id`
+
+	statement, qerr := db.Prepare(query)
+	defer statement.Close()
+
+	if qerr != nil {
+		log.Println(qerr)
+	}
+
 	var id int64
-	err = statement.QueryRow("longURL").Scan(&id)
+	iderr := statement.QueryRow(longURL).Scan(&id)
+
+	if iderr != nil {
+		log.Println(iderr)
+	}
 
 	return hash(id), nil
 
 }
 
 func hash(id int64) string {
-	e, _ := hasher.EncodeInt64([]int64{id})
+	e, err := hasher.EncodeInt64([]int64{id})
+	if err != nil {
+		log.Println(err)
+	}
 	return e
 }
 
 func dehash(token string) int64 {
-	key, _ := hasher.DecodeInt64WithError(token)
+	key, err := hasher.DecodeInt64WithError(token)
+	if err != nil {
+		log.Println(err)
+	}
 	return key[0]
 }

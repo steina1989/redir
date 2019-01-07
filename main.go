@@ -10,7 +10,7 @@ import (
 )
 
 type request struct {
-	path string
+	Path string
 }
 
 // Todo: Fetch dynamically
@@ -29,7 +29,10 @@ func main() {
 		port = "8000"
 
 	}
+	initDb(os.Getenv("DATABASE_URL"))
+
 	log.Fatal(http.ListenAndServe(":"+port, r))
+
 }
 
 func redirectHandler(w http.ResponseWriter, r *http.Request) {
@@ -39,14 +42,14 @@ func redirectHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func postHandler(w http.ResponseWriter, r *http.Request) {
-	var req request
-	err := json.NewDecoder(r.Body).Decode(&req)
+	var out request
+
+	err := json.NewDecoder(r.Body).Decode(&out)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
-
-	var alias, _ = submitLongURL(req.path)
+	var alias, _ = submitLongURL(out.Path)
 
 	response := map[string]string{"shortened": domain + "/" + alias}
 
