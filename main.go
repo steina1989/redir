@@ -2,8 +2,10 @@ package main
 
 import (
 	"encoding/json"
+	"errors"
 	"log"
 	"net/http"
+	"net/url"
 	"os"
 
 	"github.com/gorilla/mux"
@@ -14,46 +16,80 @@ type request struct {
 }
 
 // Todo: Fetch dynamically
-var domain = "redirdev.herokuapp.com"
+var domain = "https://redirdev.herokuapp.com"
 
 var salt = "To be fetched from a better place"
 var minLength = 20
 
 func main() {
-
 	r := mux.NewRouter()
 	r.HandleFunc("/", postHandler).Methods("POST")
 	r.HandleFunc("/{token}", redirectHandler).Methods("GET")
+
 	port := os.Getenv("PORT")
 	if port == "" {
 		port = "8000"
 
 	}
-	initDb(os.Getenv("DATABASE_URL"))
+	InitDb(os.Getenv("DATABASE_URL"))
 
+	log.Println("Server started")
 	log.Fatal(http.ListenAndServe(":"+port, r))
 
 }
 
 func redirectHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
-	longURL, _ := retrieveLongURL(vars["token"])
+
+	id, hasherr := Dehash(vars["token"])
+
+	if hasherr != nil {
+		errorMessage(w, r, http.StatusBadRequest, hasherr)
+		return
+	}
+
+	longURL, err := RetrieveLongURL(id)
+
+	if err != nil {
+		errorMessage(w, r, http.StatusInternalServerError, err)
+		return
+	}
 	http.Redirect(w, r, longURL, 301)
 }
 
 func postHandler(w http.ResponseWriter, r *http.Request) {
-	var out request
+	var req request
 
-	err := json.NewDecoder(r.Body).Decode(&out)
-	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
+	jsonerr := json.NewDecoder(r.Body).Decode(&req)
+	if jsonerr != nil {
+		log.Println(jsonerr)
+		errorMessage(w, r, http.StatusBadRequest, errors.New("Bad request"))
 		return
 	}
-	var alias, _ = submitLongURL(out.Path)
 
-	response := map[string]string{"shortened": domain + "/" + alias}
+	_, urlErr := url.ParseRequestURI(req.Path)
+	if urlErr != nil {
+		errorMessage(w, r, http.StatusBadRequest, errors.New("Bad url. Forgot http://?"))
+		return
+	}
+
+	token, err := SubmitLongURL(req.Path)
+
+	if err != nil {
+		errorMessage(w, r, http.StatusInternalServerError, err)
+		return
+	}
+
+	response := map[string]string{"response": domain + "/" + token}
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(response)
 
+}
+
+func errorMessage(w http.ResponseWriter, r *http.Request, status int, e error) {
+	response := map[string]string{"error": e.Error()}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(status)
+	json.NewEncoder(w).Encode(response)
 }

@@ -2,6 +2,7 @@ package main
 
 import (
 	"database/sql"
+	"errors"
 	"log"
 
 	_ "github.com/lib/pq"
@@ -11,13 +12,16 @@ import (
 var db *sql.DB
 var hasher *hashids.HashID
 
-func initDb(connection string) {
+// InitDb attempts to connect to postgres database with supplied connection string
+// It also initializes the hash function used for the server
+// example: InitDb("postgres://user:password@host:8888/nameofdb")
+//
+func InitDb(connection string) {
 	var err error
 	db, err = sql.Open("postgres", connection)
 	if err != nil {
 		log.Fatal(err)
 	}
-	log.Println("Connection to database successful")
 
 	hd := hashids.NewData()
 	hd.Salt = salt
@@ -26,32 +30,38 @@ func initDb(connection string) {
 
 }
 
-func retrieveLongURL(token string) (string, error) {
-	// unhash primary key
-	// Get longurl from db that corresponds to key
+// RetrieveLongURL dehashes a given token to a Primary key in the database
+// Error messages are logged and abstracted error messages for end users are returned.
+func RetrieveLongURL(id int64) (string, error) {
 	var longurl string
-	id := dehash(token)
+
 	query := `SELECT longurl from url WHERE ID = ($1)`
 
-	err := db.QueryRow(query, id).Scan(&longurl)
+	dberr := db.QueryRow(query, id).Scan(&longurl)
 
-	if err != nil {
-		log.Println(err)
+	if dberr != nil {
+		log.Println(dberr)
+		return "", errors.New("Entry not found")
 	}
 
 	return longurl, nil
 
 }
 
-func submitLongURL(longURL string) (string, error) {
+// SubmitLongURL adds a new entry to the database, and returns the hash of its primary key.
+// Errors are logged, and returned in an abstracted form.
+func SubmitLongURL(longURL string) (string, error) {
 
 	query := `INSERT INTO url(longurl) VALUES ($1) RETURNING id`
+
+	dbErr := errors.New("Database error")
 
 	statement, qerr := db.Prepare(query)
 	defer statement.Close()
 
 	if qerr != nil {
 		log.Println(qerr)
+		return "", dbErr
 	}
 
 	var id int64
@@ -59,6 +69,7 @@ func submitLongURL(longURL string) (string, error) {
 
 	if iderr != nil {
 		log.Println(iderr)
+		return "", dbErr
 	}
 
 	return hash(id), nil
@@ -66,17 +77,16 @@ func submitLongURL(longURL string) (string, error) {
 }
 
 func hash(id int64) string {
-	e, err := hasher.EncodeInt64([]int64{id})
-	if err != nil {
-		log.Println(err)
-	}
+	e, _ := hasher.EncodeInt64([]int64{id})
 	return e
 }
 
-func dehash(token string) int64 {
+// Dehash converts a token to a Primary key
+func Dehash(token string) (int64, error) {
 	key, err := hasher.DecodeInt64WithError(token)
 	if err != nil {
 		log.Println(err)
+		return int64(0), errors.New("Invalid token")
 	}
-	return key[0]
+	return key[0], nil
 }
