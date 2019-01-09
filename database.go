@@ -14,20 +14,25 @@ var hasher *hashids.HashID
 
 // InitDb attempts to connect to postgres database with supplied connection string
 // It also initializes the hash function used for the server
-// example: InitDb("postgres://user:password@host:8888/nameofdb")
-//
 func InitDb(connection string) {
 	var err error
 	db, err = sql.Open("postgres", connection)
 	if err != nil {
 		log.Fatal(err)
 	}
+}
 
+// InitHash initializes hash function
+func InitHash(salt string) {
 	hd := hashids.NewData()
 	hd.Salt = salt
 	hd.MinLength = minLength
-	hasher, _ = hashids.NewWithData(hd)
 
+	var err error
+	hasher, err = hashids.NewWithData(hd)
+	if err != nil {
+		log.Fatal(err)
+	}
 }
 
 // RetrieveLongURL dehashes a given token to a Primary key in the database

@@ -15,23 +15,17 @@ type request struct {
 	Path string
 }
 
-// Todo: Fetch dynamically
 var domain = "https://redirdev.herokuapp.com"
-
-var salt = "To be fetched from a better place"
-var minLength = 20
+var minLength = 5
 
 func main() {
 	r := mux.NewRouter()
 	r.HandleFunc("/", postHandler).Methods("POST")
 	r.HandleFunc("/{token}", redirectHandler).Methods("GET")
 
-	port := os.Getenv("PORT")
-	if port == "" {
-		port = "8000"
-
-	}
-	InitDb(os.Getenv("DATABASE_URL"))
+	port := getEnv("PORT", "8888")
+	InitDb(getEnv("DATABASE_URL", "postgres://user:pw@host:5432/nameofdb"))
+	InitHash(getEnv("HASH_SALT", "Unsafe salt"))
 
 	log.Println("Server started")
 	log.Fatal(http.ListenAndServe(":"+port, r))
@@ -42,18 +36,17 @@ func redirectHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 
 	id, hasherr := Dehash(vars["token"])
-
 	if hasherr != nil {
 		errorMessage(w, r, http.StatusBadRequest, hasherr)
 		return
 	}
 
 	longURL, err := RetrieveLongURL(id)
-
 	if err != nil {
 		errorMessage(w, r, http.StatusInternalServerError, err)
 		return
 	}
+
 	http.Redirect(w, r, longURL, 301)
 }
 
@@ -74,7 +67,6 @@ func postHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	token, err := SubmitLongURL(req.Path)
-
 	if err != nil {
 		errorMessage(w, r, http.StatusInternalServerError, err)
 		return
@@ -92,4 +84,11 @@ func errorMessage(w http.ResponseWriter, r *http.Request, status int, e error) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(status)
 	json.NewEncoder(w).Encode(response)
+}
+
+func getEnv(key, def string) string {
+	if val, ok := os.LookupEnv(key); ok {
+		return val
+	}
+	return def
 }
