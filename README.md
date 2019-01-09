@@ -46,7 +46,7 @@ I won't get into Heroku details but when you have initialized and logged in to H
 
 Instead of using
 ```
-go build && ./main
+go build && ./redir
 ```
 consider using a .env file with KEY=VALUE pairs instead of manually exporting the configuration variables and then run
 ```
