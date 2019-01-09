@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Url shortener API</title>
+</head>
+<style>
+html {
+    background-color: aquamarine
+}
+.api {
+    background-color: white;
+    position: absolute;
+    left: 50%;
+    top: 30%;
+    -webkit-transform: translate(-50%, -50%);
+    transform: translate(-50%, -50%);
+    box-shadow: 0 4px 8px 0 rgba(0,0,0,0.3);
+    padding: 10px;
+    transition: 0.3s;
+    border-radius: 5px;
+  }
+</style>
+<body>
+    <div class="api">
+        <code>
+        $ curl -d '{"path":"https://someverylongpath.co.uk"}' https://redirdev.herokuapp.com
+        {"response":"https://redirdev.herokuapp.com/d24zX"}
+        </code>
+    </div>
+    <p>
+        <a href="https://github.com/steina1989/redir">Github</a>
+    </p>
+</body>
+</html>

@@ -27,6 +27,8 @@ func main() {
 	InitDb(getEnv("DATABASE_URL", "postgres://user:pw@host:5432/nameofdb"))
 	InitHash(getEnv("HASH_SALT", "Unsafe salt"))
 
+	r.PathPrefix("/").Handler(http.FileServer(http.Dir("./static/")))
+
 	log.Println("Server started")
 	log.Fatal(http.ListenAndServe(":"+port, r))
 
