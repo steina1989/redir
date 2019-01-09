@@ -52,13 +52,16 @@ consider using a .env file with KEY=VALUE pairs instead of manually exporting th
 ```
 go install && heroku local 
 ```
-for local development 
+for local development.
+
+Use a heroku environmental variable to add a secret salt and your domain name.
 
 ```
-git push heroku master
+heroku config:set PATH_PREFIX=https://yoursomewhatshorterdomainhopefully.com
+heroku config:set INIT_HASH=.....
 ```
+etc.
 
-Use a heroku environmental variable to add a secret salt.
 
 ## Built With
 
