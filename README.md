@@ -34,7 +34,7 @@ Export neccessary environment variables
 
 Build and run
 ```
-go build && ./main
+go build && ./redir
 ```
 
 ## Deployment
