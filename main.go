@@ -15,7 +15,7 @@ type request struct {
 	Path string
 }
 
-var domain = "https://redirdev.herokuapp.com"
+var prefix string
 var minLength = 5
 
 func main() {
@@ -24,12 +24,13 @@ func main() {
 	r.HandleFunc("/{token}", redirectHandler).Methods("GET")
 
 	port := getEnv("PORT", "8888")
+	prefix = getEnv("PATH_PREFIX", "localhost:"+port)
+	// Note: Database_url is the one configuration you need to set before trying this out.
 	InitDb(getEnv("DATABASE_URL", "postgres://user:pw@host:5432/nameofdb"))
 	InitHash(getEnv("HASH_SALT", "Unsafe salt"))
 
 	r.PathPrefix("/").Handler(http.FileServer(http.Dir("./static/")))
 
-	log.Println("Server started")
 	log.Fatal(http.ListenAndServe(":"+port, r))
 
 }
@@ -74,7 +75,7 @@ func postHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	response := map[string]string{"response": domain + "/" + token}
+	response := map[string]string{"response": prefix + "/" + token}
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(response)
